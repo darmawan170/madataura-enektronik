@@ -6,11 +6,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 p-6">
-<h1 class="text-3xl font-bold mb-4">Dashboard Admin</h1>
-<a href="index.html" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded text-sm mb-4 inline-block">Buka Toko</a>
+<h1 class="text-3xl font-bold mb-4">Dashboard Admin Masaji</h1>
+<a href="index.html" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded text-sm mb-4 inline-block">Lihat Toko</a>
 
 <div class="grid lg:grid-cols-2 gap-6">
-  <!-- FORM PRODUK -->
   <div class="bg-white p-4 rounded-xl shadow">
     <h2 class="font-bold mb-3">Tambah/Edit Produk</h2>
     <form id="productForm">
@@ -22,25 +21,23 @@
       <textarea id="desc" placeholder="Deskripsi" class="w-full border p-2 rounded mb-2"></textarea>
       <button class="bg-indigo-600 text-white px-4 py-2 rounded w-full">Simpan Produk</button>
     </form>
-    <p class="text-xs mt-2">Upload gambar: <a href="https://imgur.com" target="_blank" class="text-blue-500">imgur.com</a></p>
+    <p class="text-xs mt-2">Upload gambar: <a href="https://imgur.com" target="_blank" class="text-blue-500">imgur.com</a> → copy "Direct Link"</p>
   </div>
 
-  <!-- DAFTAR PRODUK -->
   <div class="bg-white p-4 rounded-xl shadow">
     <h2 class="font-bold mb-3">Daftar Produk</h2>
-    <table class="w-full text-sm"><tbody id="productList"></tbody></table>
+    <table class="w-full text-sm"><thead><tr><td>Gambar</td><td>Nama</td><td>Harga</td><td>Aksi</td></tr></thead><tbody id="productList"></tbody></table>
   </div>
 </div>
 
 <script>
-const KEY = 'masaji_products'; // KUNCI SAMA DENGAN INDEX
+const KEY = 'masaji_products';
 let products = JSON.parse(localStorage.getItem(KEY)) || [];
 
 function save() {
   localStorage.setItem(KEY, JSON.stringify(products));
+  localStorage.setItem('masaji_update', Date.now()); // Kasih sinyal ke index
   loadProducts();
-  // KIRIM SINYAL KE TAB INDEX BIAR AUTO REFRESH
-  localStorage.setItem('masaji_update', Date.now());
 }
 
 function loadProducts() {
@@ -70,6 +67,14 @@ productForm.onsubmit = (e) => {
 
 function deleteProduct(i) { if(confirm('Hapus?')) { products.splice(i,1); save(); } }
 function editProduct(i) {
+  const p = products[i];
+  productId.value = p.id; name.value = p.name; price.value = p.price; stock.value = p.stock; desc.value = p.desc; img.value = p.img;
+}
+
+loadProducts();
+</script>
+</body>
+</html>function editProduct(i) {
   const p = products[i];
   productId.value = p.id; name.value = p.name; price.value = p.price; stock.value = p.stock; desc.value = p.desc; img.value = p.img;
 }
