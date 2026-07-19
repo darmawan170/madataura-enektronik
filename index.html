@@ -1,84 +1,225 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
+(function() {
+  if (window.__playableTouchPatchInstalled) return;
+  window.__playableTouchPatchInstalled = true;
+  var origAdd = EventTarget.prototype.addEventListener;
+  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    if (blockedTypes[type]) {
+      if (options === undefined || options === null) {
+        options = { passive: true };
+      } else if (typeof options === 'boolean') {
+        options = { capture: options, passive: true };
+      } else {
+        options = Object.assign({}, options, { passive: true });
+      }
+    }
+    return origAdd.call(this, type, listener, options);
+  };
+})();
+</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Masaji Elektronik - Toko Online</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50">
-<header class="bg-white shadow p-4 flex justify-between items-center">
-  <h1 class="text-2xl font-bold">Masaji Elektronik</h1>
-  <button onclick="toggleCart()" class="bg-indigo-600 text-white px-4 py-2 rounded">Keranjang (<span id="cartCount">0</span>)</button>
+<body class="bg-slate-50 min-h-screen">
+<header class="bg-white shadow sticky top-0 z-40 p-4 flex justify-between items-center">
+  <h1 class="text-2xl font-bold text-slate-800">Masaji Elektronik</h1>
+  <button onclick="toggleCart()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+    🛒 Keranjang (<span id="cartCount">0</span>)
+  </button>
 </header>
 
-<main class="p-6"><div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div></main>
+<main class="p-6 max-w-7xl mx-auto">
+  <div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+</main>
 
-<div id="cartSidebar" class="fixed right-0 top-0 h-full w-80 bg-white shadow-xl p-4 hidden z-50">
-  <div class="flex justify-between"><h2 class="font-bold text-xl mb-2">Keranjang</h2><button onclick="toggleCart()">X</button></div>
-  <div id="cartItems" class="mb-4"></div>
-  <p class="mt-2 font-bold">Total: Rp <span id="totalPrice">0</span></p>
-  <button onclick="checkoutWA()" class="bg-green-600 text-white w-full py-2 rounded mt-2">Checkout via WA</button>
+<div id="cartSidebar" class="fixed right-0 top-0 h-full w-96 max-w-[90vw] bg-white shadow-2xl p-5 hidden z-50 flex flex-col">
+  <div class="flex justify-between items-center border-b pb-3 mb-3">
+    <h2 class="font-bold text-xl">Keranjang</h2>
+    <button onclick="toggleCart()" class="w-8 h-8 bg-slate-100 rounded-full">✕</button>
+  </div>
+  <div id="cartItems" class="mb-4 flex-1 overflow-y-auto space-y-2"></div>
+  <div class="border-t pt-3">
+    <p class="font-bold text-lg">Total: Rp <span id="totalPrice">0</span></p>
+    <button onclick="checkoutWA()" class="bg-green-600 hover:bg-green-700 text-white w-full py-3 rounded-lg mt-3 font-bold">Checkout via WA</button>
+    <button onclick="clearCart()" class="w-full py-2 text-sm text-gray-500 mt-2">Kosongkan Keranjang</button>
+  </div>
 </div>
+<div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/30 hidden z-40"></div>
 
 <script>
 const KEY = 'masaji_products';
-let products = JSON.parse(localStorage.getItem(KEY)) || [];
+const WA_NUMBER = "6288994657745";
+
+const elGrid = document.getElementById('productGrid');
+const elCartItems = document.getElementById('cartItems');
+const elTotalPrice = document.getElementById('totalPrice');
+const elCartCount = document.getElementById('cartCount');
+const elCartSidebar = document.getElementById('cartSidebar');
+const elOverlay = document.getElementById('overlay');
+
+let products = [];
 let cart = [];
-let WA_NUMBER = "6288994657745"; // GANTI NO WA KAMU DISINI
+
+function escapeHTML(str = "") {
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function getProducts() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch { return []; }
+}
 
 function loadProducts() {
-  products = JSON.parse(localStorage.getItem(KEY)) || [];
-  productGrid.innerHTML = "";
-  if(products.length == 0) {
-    productGrid.innerHTML = `<p class="col-span-4 text-center text-gray-500">Belum ada produk. Silahkan buka admin.html untuk menambah produk</p>`;
+  products = getProducts();
+  elGrid.innerHTML = "";
+  if(products.length === 0) {
+    elGrid.innerHTML = `<div class="col-span-4 text-center py-20">
+      <p class="text-gray-500">Belum ada produk.</p>
+      <a href="admin.html" class="text-indigo-600 underline">Buka admin.html untuk menambah produk</a>
+    </div>`;
     return;
   }
   products.forEach(p => {
-    productGrid.innerHTML += `<div class="bg-white p-3 rounded shadow">
-      <img src="${p.img}" class="w-full h-40 object-cover rounded">
-      <h3 class="font-bold mt-2">${p.name}</h3>
-      <p class="text-sm text-gray-500">Stok: ${p.stock} | Terjual: ${p.sold||0}</p>
-      <p class="font-bold text-indigo-600">Rp ${p.price.toLocaleString('id-ID')}</p>
-      <button onclick="addToCart('${p.id}')" ${p.stock==0?'disabled':''} class="bg-indigo-600 text-white w-full py-1 rounded mt-1 disabled:bg-gray-400">${p.stock==0?'Stok Habis':'+ Keranjang'}</button>
-    </div>`;
+    const habis = p.stock <= 0;
+    const card = document.createElement('div');
+    card.className = "bg-white p-3 rounded-xl shadow hover:shadow-lg transition";
+    card.innerHTML = `
+      <img src="${escapeHTML(p.img)}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-40 object-cover rounded-lg bg-slate-100">
+      <h3 class="font-bold mt-3 line-clamp-2">${escapeHTML(p.name)}</h3>
+      <p class="text-xs text-gray-500 mt-1">${escapeHTML(p.desc||'').slice(0,60)}</p>
+      <p class="text-sm text-gray-500 mt-1">Stok: ${p.stock} | Terjual: ${p.sold||0}</p>
+      <p class="font-bold text-indigo-600 mt-1">Rp ${(Number(p.price)||0).toLocaleString('id-ID')}</p>
+      <button data-id="${p.id}" class="add-btn bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-lg mt-2 disabled:bg-gray-400 text-sm font-medium" ${habis?'disabled':''}>${habis?'Stok Habis':'+ Keranjang'}</button>
+    `;
+    elGrid.appendChild(card);
   });
+  // bind buttons safely
+  elGrid.querySelectorAll('.add-btn').forEach(b => b.addEventListener('click', () => addToCart(b.dataset.id)));
 }
-
-window.addEventListener('storage', (e) => { if(e.key === 'masaji_update') loadProducts(); });
 
 function addToCart(id) {
-  const p = products.find(p=>p.id==id);
+  products = getProducts(); // always fresh
+  const p = products.find(x => String(x.id) === String(id));
+  if(!p) return alert('Produk tidak ditemukan');
   if(p.stock <= 0) return alert('Stok habis');
-  const item = cart.find(i => i.id == id);
-  if(item) item.qty++; else cart.push({id, qty: 1});
+  const item = cart.find(i => String(i.id) === String(id));
+  const currentQty = item ? item.qty : 0;
+  if(currentQty + 1 > p.stock) return alert(`Stok tidak cukup. Sisa ${p.stock}`);
+  if(item) item.qty++; else cart.push({id: p.id, qty: 1});
   renderCart();
 }
+
 function renderCart() {
-  cartItems.innerHTML = ""; let total = 0;
-  cart.forEach(i => {
-    const p = products.find(p=>p.id==i.id);
-    total += p.price * i.qty;
-    cartItems.innerHTML += `<div class="flex justify-between border-b py-1">${p.name} x${i.qty} <span>Rp ${(p.price*i.qty).toLocaleString('id-ID')}</span></div>`;
+  elCartItems.innerHTML = "";
+  let total = 0;
+  let count = 0;
+  if(cart.length === 0) {
+    elCartItems.innerHTML = `<p class="text-center text-gray-400 py-10">Keranjang kosong</p>`;
+  }
+  cart = cart.filter(c => {
+    const prod = products.find(pr => String(pr.id) === String(c.id));
+    if(!prod) return false; // hapus jika produk sudah dihapus admin
+    return true;
   });
-  totalPrice.innerText = total.toLocaleString('id-ID');
-  cartCount.innerText = cart.reduce((a,b)=>a+b.qty,0);
-}
-function checkoutWA() {
-  if(cart.length == 0) return alert('Keranjang kosong');
-  let message = "Halo Masaji, saya mau pesan:%0A";
+
   cart.forEach(i => {
-    const p = products.find(p=>p.id==i.id);
-    message += `- ${p.name} x${i.qty}%0A`;
-    p.stock = p.stock - i.qty;
-    p.sold = (p.sold||0) + i.qty;
+    const p = products.find(pr => String(pr.id) === String(i.id));
+    if(!p) return;
+    const sub = p.price * i.qty;
+    total += sub;
+    count += i.qty;
+    const row = document.createElement('div');
+    row.className = "flex justify-between items-center border-b py-2 gap-2";
+    row.innerHTML = `
+      <div class="flex-1">
+        <p class="font-medium text-sm">${escapeHTML(p.name)}</p>
+        <p class="text-xs text-gray-500">Rp ${Number(p.price).toLocaleString('id-ID')} x ${i.qty}</p>
+        <div class="flex gap-1 mt-1">
+          <button class="dec w-6 h-6 bg-slate-100 rounded">-</button>
+          <button class="inc w-6 h-6 bg-slate-100 rounded">+</button>
+          <button class="del text-xs text-red-500 ml-2">Hapus</button>
+        </div>
+      </div>
+      <span class="font-bold text-sm">Rp ${sub.toLocaleString('id-ID')}</span>
+    `;
+    row.querySelector('.dec').onclick = () => updateQty(i.id, i.qty - 1);
+    row.querySelector('.inc').onclick = () => updateQty(i.id, i.qty + 1);
+    row.querySelector('.del').onclick = () => updateQty(i.id, 0);
+    elCartItems.appendChild(row);
+  });
+  elTotalPrice.innerText = total.toLocaleString('id-ID');
+  elCartCount.innerText = count;
+}
+
+function updateQty(id, newQty) {
+  products = getProducts();
+  const p = products.find(pr => String(pr.id) === String(id));
+  if(newQty <= 0) {
+    cart = cart.filter(c => String(c.id) !== String(id));
+  } else {
+    if(p && newQty > p.stock) return alert(`Maksimal stok ${p.stock}`);
+    const item = cart.find(c => String(c.id) === String(id));
+    if(item) item.qty = newQty;
+  }
+  renderCart();
+}
+
+function clearCart() { cart = []; renderCart(); }
+
+function toggleCart() {
+  elCartSidebar.classList.toggle('hidden');
+  elOverlay.classList.toggle('hidden');
+}
+
+function checkoutWA() {
+  if(cart.length === 0) return alert('Keranjang kosong');
+  products = getProducts();
+  
+  // validasi akhir
+  for(const i of cart) {
+    const p = products.find(pr => String(pr.id) === String(i.id));
+    if(!p) return alert(`Produk sudah tidak tersedia`);
+    if(i.qty > p.stock) return alert(`${p.name} stok tidak cukup. Sisa ${p.stock}`);
+  }
+
+  let message = `Halo Masaji Elektronik, saya mau pesan:%0A%0A`;
+  let total = 0;
+  cart.forEach(i => {
+    const p = products.find(pr => String(pr.id) === String(i.id));
+    const sub = p.price * i.qty;
+    total += sub;
+    message += `- ${p.name} x${i.qty} = Rp ${sub.toLocaleString('id-ID')}%0A`;
+  });
+  message += `%0ATotal: Rp ${total.toLocaleString('id-ID')}%0A%0AMohon info lanjut.`;
+
+  // kurangi stok
+  cart.forEach(i => {
+    const idx = products.findIndex(pr => String(pr.id) === String(i.id));
+    if(idx > -1) {
+      products[idx].stock -= i.qty;
+      products[idx].sold = (products[idx].sold||0) + i.qty;
+    }
   });
   localStorage.setItem(KEY, JSON.stringify(products));
-  window.open(`https://wa.me/${WA_NUMBER}?text=${message}`);
+  localStorage.setItem('masaji_update', Date.now().toString());
+
+  window.open(`https://wa.me/${WA_NUMBER}?text=${message}`, '_blank');
   cart = []; renderCart(); loadProducts();
+  toggleCart();
 }
-window.toggleCart = () => cartSidebar.classList.toggle('hidden');
+
+// sync antar tab + saat fokus balik dari admin
+window.addEventListener('storage', (e) => {
+  if(e.key === KEY || e.key === 'masaji_update') loadProducts();
+});
+window.addEventListener('focus', loadProducts);
 
 loadProducts();
+renderCart();
 </script>
 </body>
 </html>
