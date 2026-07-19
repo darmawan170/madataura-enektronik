@@ -2,35 +2,35 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Masaji Elektronik</title>
+<title>Masaji Elektronik - Toko Online</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50">
-<header class="bg-white shadow p-4 flex justify-between">
+<header class="bg-white shadow p-4 flex justify-between items-center">
   <h1 class="text-2xl font-bold">Masaji Elektronik</h1>
-  <a href="admin.html" target="_blank" class="bg-yellow-500 text-white px-4 py-2 rounded">Mode Admin</a>
   <button onclick="toggleCart()" class="bg-indigo-600 text-white px-4 py-2 rounded">Keranjang (<span id="cartCount">0</span>)</button>
 </header>
 
 <main class="p-6"><div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div></main>
 
 <div id="cartSidebar" class="fixed right-0 top-0 h-full w-80 bg-white shadow-xl p-4 hidden z-50">
-  <h2 class="font-bold text-xl mb-2">Keranjang</h2><div id="cartItems"></div>
+  <div class="flex justify-between"><h2 class="font-bold text-xl mb-2">Keranjang</h2><button onclick="toggleCart()">X</button></div>
+  <div id="cartItems" class="mb-4"></div>
   <p class="mt-2 font-bold">Total: Rp <span id="totalPrice">0</span></p>
   <button onclick="checkoutWA()" class="bg-green-600 text-white w-full py-2 rounded mt-2">Checkout via WA</button>
 </div>
 
 <script>
-const KEY = 'masaji_products'; // HARUS SAMA DENGAN ADMIN
+const KEY = 'masaji_products';
 let products = JSON.parse(localStorage.getItem(KEY)) || [];
 let cart = [];
-let WA_NUMBER = "6281234567890"; // GANTI NO WA KAMU
+let WA_NUMBER = "6281234567890"; // GANTI NO WA KAMU DISINI
 
 function loadProducts() {
-  products = JSON.parse(localStorage.getItem(KEY)) || []; // AMBIL ULANG TIAP LOAD
+  products = JSON.parse(localStorage.getItem(KEY)) || [];
   productGrid.innerHTML = "";
   if(products.length == 0) {
-    productGrid.innerHTML = `<p class="col-span-4 text-center">Belum ada produk. Klik "Mode Admin" buat nambah</p>`;
+    productGrid.innerHTML = `<p class="col-span-4 text-center text-gray-500">Belum ada produk. Silahkan buka admin.html untuk menambah produk</p>`;
     return;
   }
   products.forEach(p => {
@@ -44,12 +44,14 @@ function loadProducts() {
   });
 }
 
-// AUTO REFRESH KALAU ADMIN UPDATE
+// AUTO REFRESH SAAT ADMIN UPDATE
 window.addEventListener('storage', (e) => {
   if(e.key === 'masaji_update') loadProducts();
 });
 
 function addToCart(id) {
+  const p = products.find(p=>p.id==id);
+  if(p.stock <= 0) return alert('Stok habis');
   const item = cart.find(i => i.id == id);
   if(item) item.qty++; else cart.push({id, qty: 1});
   renderCart();
@@ -59,21 +61,22 @@ function renderCart() {
   cart.forEach(i => {
     const p = products.find(p=>p.id==i.id);
     total += p.price * i.qty;
-    cartItems.innerHTML += `<div class="flex justify-between">${p.name} x${i.qty} <span>Rp ${(p.price*i.qty).toLocaleString('id-ID')}</span></div>`;
+    cartItems.innerHTML += `<div class="flex justify-between border-b py-1">${p.name} x${i.qty} <span>Rp ${(p.price*i.qty).toLocaleString('id-ID')}</span></div>`;
   });
   totalPrice.innerText = total.toLocaleString('id-ID');
   cartCount.innerText = cart.reduce((a,b)=>a+b.qty,0);
 }
 function checkoutWA() {
-  let message = "Halo Masaji, saya mau pesan:\n";
+  if(cart.length == 0) return alert('Keranjang kosong');
+  let message = "Halo Masaji, saya mau pesan:%0A";
   cart.forEach(i => {
     const p = products.find(p=>p.id==i.id);
-    message += `- ${p.name} x${i.qty}\n`;
+    message += `- ${p.name} x${i.qty}%0A`;
     p.stock = p.stock - i.qty;
     p.sold = (p.sold||0) + i.qty;
   });
   localStorage.setItem(KEY, JSON.stringify(products));
-  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`);
+  window.open(`https://wa.me/${WA_NUMBER}?text=${message}`);
   cart = []; renderCart(); loadProducts();
 }
 window.toggleCart = () => cartSidebar.classList.toggle('hidden');
