@@ -6,7 +6,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50">
-<header class="bg-white shadow sticky top-0 p-4 flex justify-between">
+<header class="bg-white shadow sticky top-0 p-4 flex justify-between z-40">
   <h1 class="text-2xl font-bold">Masaji Elektronik</h1>
   <button onclick="toggleCart()" class="bg-indigo-600 text-white px-4 py-2 rounded">🛒 Keranjang (<span id="cartCount">0</span>)</button>
 </header>
@@ -14,22 +14,22 @@
 <main class="p-6 max-w-7xl mx-auto"><div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"></div></main>
 
 <!-- SIDEBAR KERANJANG + CHECKOUT -->
-<div id="cartSidebar" class="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl p-5 hidden z-50 overflow-y-auto">
+<div id="cartSidebar" class="fixed right-0 top-0 h-full w-96 max-w-[90vw] bg-white shadow-2xl p-5 hidden z-50 overflow-y-auto">
   <div class="flex justify-between"><h2 class="font-bold text-xl">Checkout</h2><button onclick="toggleCart()">✕</button></div>
 
   <!-- DATA CUSTOMER -->
   <div class="mt-4 space-y-2">
-    <input id="cNama" placeholder="Nama Penerima" class="w-full border p-2 rounded" required>
-    <input id="cWA" placeholder="No WA 08xxx" class="w-full border p-2 rounded" required>
+    <input id="cNama" placeholder="Nama Penerima *" class="w-full border p-2 rounded" required>
+    <input id="cWA" placeholder="No WA 08xxx *" class="w-full border p-2 rounded" required>
     <input id="cEmail" type="email" placeholder="Email Gmail" class="w-full border p-2 rounded">
-    <textarea id="cAlamat" placeholder="Alamat Lengkap" class="w-full border p-2 rounded"></textarea>
+    <textarea id="cAlamat" placeholder="Alamat Lengkap *" class="w-full border p-2 rounded" required></textarea>
     <div class="grid grid-cols-2 gap-2">
       <input id="cRT" placeholder="RT/RW" class="border p-2 rounded">
       <input id="cKel" placeholder="Kelurahan" class="border p-2 rounded">
     </div>
     <div class="grid grid-cols-2 gap-2">
       <input id="cKec" placeholder="Kecamatan" class="border p-2 rounded">
-      <input id="cKota" placeholder="Kota/Kabupaten" class="border p-2 rounded">
+      <input id="cKota" placeholder="Kota/Kabupaten *" class="border p-2 rounded" required>
     </div>
     <input id="cKodepos" placeholder="Kode Pos" class="w-full border p-2 rounded">
   </div>
@@ -42,7 +42,7 @@
       <option value="J&T">J&T</option>
       <option value="SiCepat">SiCepat</option>
     </select>
-    <p class="text-xs text-gray-500">Ongkir estimasi: Rp 15000</p>
+    <p class="text-xs text-gray-500">Ongkir estimasi: Rp 15.000</p>
   </div>
 
   <!-- VOUCHER -->
@@ -50,17 +50,17 @@
     <label class="text-sm font-bold">Kode Voucher</label>
     <div class="flex gap-2">
       <input id="inputVoucher" placeholder="PROMO10RB" class="w-full border p-2 rounded uppercase">
-      <button onclick="pakaiVoucher()" class="bg-green-600 text-white px-3 rounded">Pakai</button>
+      <button type="button" onclick="pakaiVoucher()" class="bg-green-600 text-white px-3 rounded">Pakai</button>
     </div>
-    <p id="infoVoucher" class="text-xs text-green-600"></p>
+    <p id="infoVoucher" class="text-xs text-green-600 mt-1"></p>
   </div>
 
   <!-- RINCIAN -->
-  <div id="cartItems" class="my-3"></div>
+  <div id="cartItems" class="my-3 border-t pt-2"></div>
   <p class="font-bold">Subtotal: Rp <span id="subTotal">0</span></p>
-  <p class="font-bold">Diskon: -Rp <span id="diskon">0</span></p>
+  <p class="font-bold">Diskon: -Rp <span id="diskonEl">0</span></p>
   <p class="font-bold">Ongkir: Rp <span id="ongkir">15000</span></p>
-  <p class="font-bold text-lg">Total: Rp <span id="totalPrice">0</span></p>
+  <p class="font-bold text-lg border-t mt-2 pt-2">Total: Rp <span id="totalPrice">0</span></p>
   <button onclick="checkoutWA()" class="bg-green-600 text-white w-full py-3 rounded mt-3 font-bold">Kirim Pesanan WA</button>
 </div>
 <div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/30 hidden z-40"></div>
@@ -76,57 +76,82 @@ function getData(){
   products = JSON.parse(localStorage.getItem(KEY_PROD)) || [];
   vouchers = JSON.parse(localStorage.getItem(KEY_VOU)) || [];
 }
+
 function loadProducts(){
   getData();
   productGrid.innerHTML = "";
+  if(products.length==0){
+    productGrid.innerHTML = `<p class="col-span-4 text-center text-gray-500">Belum ada produk. Buka admin.html</p>`;
+    return;
+  }
   products.forEach(p => {
     productGrid.innerHTML += `<div class="bg-white p-3 rounded shadow">
-      <img src="${p.img}" class="w-full h-40 object-cover rounded">
+      <img src="${p.img}" onerror="this.src='https://via.placeholder.com/300'" class="w-full h-40 object-cover rounded">
       <h3 class="font-bold mt-2">${p.name}</h3>
-      <p class="text-sm">Stok: ${p.stock}</p>
+      <p class="text-sm">Stok: ${p.stock} | Terjual: ${p.sold||0}</p>
       <p class="font-bold text-indigo-600">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
       <button onclick="addToCart('${p.id}')" ${p.stock==0?'disabled':''} class="bg-indigo-600 text-white w-full py-1 rounded mt-1 disabled:bg-gray-400">${p.stock==0?'Stok Habis':'+ Keranjang'}</button>
     </div>`;
   });
 }
+
 function addToCart(id){
+  getData();
   const p = products.find(x=>String(x.id)==String(id));
+  if(!p || p.stock<=0) return alert('Stok habis');
   const item = cart.find(i=>String(i.id)==String(id));
   if(item) item.qty++; else cart.push({id, qty:1});
   renderCart();
 }
+
 function renderCart(){
-  let sub = 0;
+  let sub = 0, count=0;
   cartItems.innerHTML = "";
+  if(cart.length==0){
+    cartItems.innerHTML = '<p class="text-center text-gray-400">Keranjang kosong</p>';
+  }
   cart.forEach(i=>{
     const p = products.find(pr=>String(pr.id)==String(i.id));
-    const total = p.price * i.qty; sub += total;
-    cartItems.innerHTML += `<div class="flex justify-between">${p.name} x${i.qty} <span>Rp ${total.toLocaleString('id-ID')}</span></div>`;
+    if(!p) return;
+    const total = p.price * i.qty; sub += total; count+=i.qty;
+    cartItems.innerHTML += `<div class="flex justify-between text-sm">${p.name} x${i.qty} <span>Rp ${total.toLocaleString('id-ID')}</span></div>`;
   });
-  subTotal.innerText = sub.toLocaleString('id-ID');
+  document.getElementById('subTotal').innerText = sub.toLocaleString('id-ID');
+  document.getElementById('cartCount').innerText = count;
   hitungTotal(sub);
 }
+
 function hitungTotal(sub){
-  totalPrice.innerText = (sub - diskon + ONGKIR).toLocaleString('id-ID');
-  ongkir.innerText = ONGKIR.toLocaleString('id-ID');
-  diskonEl.innerText = diskon.toLocaleString('id-ID');
+  const total = sub - diskon + ONGKIR;
+  document.getElementById('totalPrice').innerText = total.toLocaleString('id-ID');
+  document.getElementById('ongkir').innerText = ONGKIR.toLocaleString('id-ID');
+  document.getElementById('diskonEl').innerText = diskon.toLocaleString('id-ID'); // FIX: ini yang error
 }
+
 function pakaiVoucher(){
-  const kode = inputVoucher.value.toUpperCase();
+  getData();
+  const kode = document.getElementById('inputVoucher').value.toUpperCase();
   const v = vouchers.find(x=>x.code==kode && x.kuota>0);
-  if(!v) return alert('Voucher tidak valid/habis');
+  if(!v) return alert('Voucher tidak valid atau kuota habis');
   voucherAktif = v; diskon = v.diskon;
-  infoVoucher.innerText = `Voucher ${v.code} aktif! Diskon Rp ${v.diskon.toLocaleString('id-ID')}`;
+  document.getElementById('infoVoucher').innerText = `Voucher ${v.code} aktif! Diskon Rp ${v.diskon.toLocaleString('id-ID')}`;
   renderCart();
 }
+
 function checkoutWA(){
-  if(!cNama.value ||!cWA.value) return alert('Lengkapi Nama dan No WA');
+  if(!document.getElementById('cNama').value ||!document.getElementById('cWA').value ||!document.getElementById('cAlamat').value)
+    return alert('Lengkapi Nama, No WA, dan Alamat');
+  if(cart.length==0) return alert('Keranjang kosong');
+
   getData();
   let msg = `*PESAN BARU MASAAJI*%0A%0A`;
   msg += `*Data Penerima*%0A`;
-  msg += `Nama: ${cNama.value}%0AWA: ${cWA.value}%0AEmail: ${cEmail.value}%0A`;
-  msg += `Alamat: ${cAlamat.value}, RT${cRT.value}, ${cKel.value}, ${cKec.value}%0A`;
-  msg += `${cKota.value}, ${cKodepos.value}%0A%0A`;
+  msg += `Nama: ${document.getElementById('cNama').value}%0A`;
+  msg += `WA: ${document.getElementById('cWA').value}%0A`;
+  msg += `Email: ${document.getElementById('cEmail').value}%0A`;
+  msg += `Alamat: ${document.getElementById('cAlamat').value}, RT${document.getElementById('cRT').value}, ${document.getElementById('cKel').value}%0A`;
+  msg += `${document.getElementById('cKec').value}, ${document.getElementById('cKota').value}, ${document.getElementById('cKodepos').value}%0A%0A`;
+
   msg += `*Produk*%0A`;
   let sub = 0;
   cart.forEach(i=>{
@@ -135,231 +160,32 @@ function checkoutWA(){
     const total = p.price*i.qty; sub+=total;
     msg += `- ${p.name} x${i.qty} = Rp ${total.toLocaleString('id-ID')}%0A`;
   });
+
   if(voucherAktif){
     voucherAktif.kuota -= 1;
     msg += `Voucher: ${voucherAktif.code} -Rp${voucherAktif.diskon.toLocaleString('id-ID')}%0A`;
   }
-  msg += `Ekspedisi: ${cEkspedisi.value} Rp${ONGKIR.toLocaleString('id-ID')}%0A`;
-  msg += `*TOTAL: Rp${(sub-diskon+ONGKIR).toLocaleString('id-ID')}*`;
+  msg += `Ekspedisi: ${document.getElementById('cEkspedisi').value} Rp${ONGKIR.toLocaleString('id-ID')}%0A`;
+  msg += `*TOTAL BAYAR: Rp${(sub-diskon+ONGKIR).toLocaleString('id-ID')}*`;
 
   localStorage.setItem(KEY_PROD, JSON.stringify(products));
   localStorage.setItem(KEY_VOU, JSON.stringify(vouchers));
-  localStorage.setItem('masaji_update', Date.now());
+  localStorage.setItem('masaji_update', Date.now().toString());
 
   window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
-  cart=[]; voucherAktif=null; diskon=0; renderCart(); loadProducts(); toggleCart();
+  cart=[]; voucherAktif=null; diskon=0;
+  document.getElementById('infoVoucher').innerText="";
+  document.getElementById('inputVoucher').value="";
+  renderCart(); loadProducts(); toggleCart();
 }
-function toggleCart(){ cartSidebar.classList.toggle('hidden'); overlay.classList.toggle('hidden'); }
+
+function toggleCart(){
+  document.getElementById('cartSidebar').classList.toggle('hidden');
+  document.getElementById('overlay').classList.toggle('hidden');
+}
 
 window.addEventListener('storage', e=>{ if(e.key=='masaji_update') loadProducts(); });
 loadProducts();
-</script>
-</body>
-</html>function addToCart(id) {
-  products = getProducts();
-  const p = products.find(x => String(x.id) === String(id));
-  if(!p || p.stock <= 0) return alert('Stok habis');
-  const item = cart.find(i => String(i.id) === String(id));
-  if(item) item.qty++; else cart.push({id: p.id, qty: 1});
-  renderCart();
-}
-
-function renderCart() {
-  elCartItems.innerHTML = "";
-  let total = 0; let count = 0;
-  cart = cart.filter(c => products.find(pr => String(pr.id) === String(c.id)));
-  cart.forEach(i => {
-    const p = products.find(pr => String(pr.id) === String(i.id));
-    if(!p) return;
-    const sub = p.price * i.qty;
-    total += sub; count += i.qty;
-    elCartItems.innerHTML += `<div class="flex justify-between border-b py-2"><div><p class="font-medium text-sm">${p.name}</p><p class="text-xs text-gray-500">Rp ${Number(p.price).toLocaleString('id-ID')} x ${i.qty}</p></div><span class="font-bold text-sm">Rp ${sub.toLocaleString('id-ID')}</span></div>`;
-  });
-  elTotalPrice.innerText = total.toLocaleString('id-ID');
-  elCartCount.innerText = count;
-  if(cart.length === 0) elCartItems.innerHTML = `<p class="text-center text-gray-400 py-10">Keranjang kosong</p>`;
-}
-
-function checkoutWA() {
-  if(cart.length === 0) return alert('Keranjang kosong');
-  products = getProducts();
-  let message = `Halo Masaji Elektronik, saya mau pesan:%0A%0A`;
-  let total = 0;
-  cart.forEach(i => {
-    const p = products.find(pr => String(pr.id) === String(i.id));
-    p.stock -= i.qty; p.sold = (p.sold||0) + i.qty;
-    const sub = p.price * i.qty; total += sub;
-    message += `- ${p.name} x${i.qty} = Rp ${sub.toLocaleString('id-ID')}%0A`;
-  });
-  message += `%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
-  localStorage.setItem(KEY, JSON.stringify(products));
-  localStorage.setItem('masaji_update', Date.now().toString());
-  window.open(`https://wa.me/${WA_NUMBER}?text=${message}`, '_blank');
-  cart = []; renderCart(); loadProducts(); toggleCart();
-}
-
-function toggleCart() {
-  elCartSidebar.classList.toggle('hidden');
-  elOverlay.classList.toggle('hidden');
-}
-
-window.addEventListener('storage', (e) => { if(e.key === KEY || e.key === 'masaji_update') loadProducts(); });
-window.addEventListener('focus', loadProducts);
-
-loadProducts();
-</script>
-</body>
-</html>  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
-  catch { return []; }
-}
-
-function loadProducts() {
-  products = getProducts();
-  elGrid.innerHTML = "";
-  if(products.length === 0) {
-    elGrid.innerHTML = `<div class="col-span-4 text-center py-20">
-      <p class="text-gray-500">Belum ada produk.</p>
-      <a href="admin.html" class="text-indigo-600 underline">Buka admin.html untuk menambah produk</a>
-    </div>`;
-    return;
-  }
-  products.forEach(p => {
-    const habis = p.stock <= 0;
-    const card = document.createElement('div');
-    card.className = "bg-white p-3 rounded-xl shadow hover:shadow-lg transition";
-    card.innerHTML = `
-      <img src="${escapeHTML(p.img)}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-40 object-cover rounded-lg bg-slate-100">
-      <h3 class="font-bold mt-3 line-clamp-2">${escapeHTML(p.name)}</h3>
-      <p class="text-xs text-gray-500 mt-1">${escapeHTML(p.desc||'').slice(0,60)}</p>
-      <p class="text-sm text-gray-500 mt-1">Stok: ${p.stock} | Terjual: ${p.sold||0}</p>
-      <p class="font-bold text-indigo-600 mt-1">Rp ${(Number(p.price)||0).toLocaleString('id-ID')}</p>
-      <button data-id="${p.id}" class="add-btn bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-lg mt-2 disabled:bg-gray-400 text-sm font-medium" ${habis?'disabled':''}>${habis?'Stok Habis':'+ Keranjang'}</button>
-    `;
-    elGrid.appendChild(card);
-  });
-  // bind buttons safely
-  elGrid.querySelectorAll('.add-btn').forEach(b => b.addEventListener('click', () => addToCart(b.dataset.id)));
-}
-
-function addToCart(id) {
-  products = getProducts(); // always fresh
-  const p = products.find(x => String(x.id) === String(id));
-  if(!p) return alert('Produk tidak ditemukan');
-  if(p.stock <= 0) return alert('Stok habis');
-  const item = cart.find(i => String(i.id) === String(id));
-  const currentQty = item ? item.qty : 0;
-  if(currentQty + 1 > p.stock) return alert(`Stok tidak cukup. Sisa ${p.stock}`);
-  if(item) item.qty++; else cart.push({id: p.id, qty: 1});
-  renderCart();
-}
-
-function renderCart() {
-  elCartItems.innerHTML = "";
-  let total = 0;
-  let count = 0;
-  if(cart.length === 0) {
-    elCartItems.innerHTML = `<p class="text-center text-gray-400 py-10">Keranjang kosong</p>`;
-  }
-  cart = cart.filter(c => {
-    const prod = products.find(pr => String(pr.id) === String(c.id));
-    if(!prod) return false; // hapus jika produk sudah dihapus admin
-    return true;
-  });
-
-  cart.forEach(i => {
-    const p = products.find(pr => String(pr.id) === String(i.id));
-    if(!p) return;
-    const sub = p.price * i.qty;
-    total += sub;
-    count += i.qty;
-    const row = document.createElement('div');
-    row.className = "flex justify-between items-center border-b py-2 gap-2";
-    row.innerHTML = `
-      <div class="flex-1">
-        <p class="font-medium text-sm">${escapeHTML(p.name)}</p>
-        <p class="text-xs text-gray-500">Rp ${Number(p.price).toLocaleString('id-ID')} x ${i.qty}</p>
-        <div class="flex gap-1 mt-1">
-          <button class="dec w-6 h-6 bg-slate-100 rounded">-</button>
-          <button class="inc w-6 h-6 bg-slate-100 rounded">+</button>
-          <button class="del text-xs text-red-500 ml-2">Hapus</button>
-        </div>
-      </div>
-      <span class="font-bold text-sm">Rp ${sub.toLocaleString('id-ID')}</span>
-    `;
-    row.querySelector('.dec').onclick = () => updateQty(i.id, i.qty - 1);
-    row.querySelector('.inc').onclick = () => updateQty(i.id, i.qty + 1);
-    row.querySelector('.del').onclick = () => updateQty(i.id, 0);
-    elCartItems.appendChild(row);
-  });
-  elTotalPrice.innerText = total.toLocaleString('id-ID');
-  elCartCount.innerText = count;
-}
-
-function updateQty(id, newQty) {
-  products = getProducts();
-  const p = products.find(pr => String(pr.id) === String(id));
-  if(newQty <= 0) {
-    cart = cart.filter(c => String(c.id) !== String(id));
-  } else {
-    if(p && newQty > p.stock) return alert(`Maksimal stok ${p.stock}`);
-    const item = cart.find(c => String(c.id) === String(id));
-    if(item) item.qty = newQty;
-  }
-  renderCart();
-}
-
-function clearCart() { cart = []; renderCart(); }
-
-function toggleCart() {
-  elCartSidebar.classList.toggle('hidden');
-  elOverlay.classList.toggle('hidden');
-}
-
-function checkoutWA() {
-  if(cart.length === 0) return alert('Keranjang kosong');
-  products = getProducts();
-  
-  // validasi akhir
-  for(const i of cart) {
-    const p = products.find(pr => String(pr.id) === String(i.id));
-    if(!p) return alert(`Produk sudah tidak tersedia`);
-    if(i.qty > p.stock) return alert(`${p.name} stok tidak cukup. Sisa ${p.stock}`);
-  }
-
-  let message = `Halo Masaji Elektronik, saya mau pesan:%0A%0A`;
-  let total = 0;
-  cart.forEach(i => {
-    const p = products.find(pr => String(pr.id) === String(i.id));
-    const sub = p.price * i.qty;
-    total += sub;
-    message += `- ${p.name} x${i.qty} = Rp ${sub.toLocaleString('id-ID')}%0A`;
-  });
-  message += `%0ATotal: Rp ${total.toLocaleString('id-ID')}%0A%0AMohon info lanjut.`;
-
-  // kurangi stok
-  cart.forEach(i => {
-    const idx = products.findIndex(pr => String(pr.id) === String(i.id));
-    if(idx > -1) {
-      products[idx].stock -= i.qty;
-      products[idx].sold = (products[idx].sold||0) + i.qty;
-    }
-  });
-  localStorage.setItem(KEY, JSON.stringify(products));
-  localStorage.setItem('masaji_update', Date.now().toString());
-
-  window.open(`https://wa.me/${WA_NUMBER}?text=${message}`, '_blank');
-  cart = []; renderCart(); loadProducts();
-  toggleCart();
-}
-
-// sync antar tab + saat fokus balik dari admin
-window.addEventListener('storage', (e) => {
-  if(e.key === KEY || e.key === 'masaji_update') loadProducts();
-});
-window.addEventListener('focus', loadProducts);
-
-loadProducts();
-renderCart();
 </script>
 </body>
 </html>
