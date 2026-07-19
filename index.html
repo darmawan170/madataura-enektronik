@@ -24,7 +24,7 @@
 const KEY = 'masaji_products';
 let products = JSON.parse(localStorage.getItem(KEY)) || [];
 let cart = [];
-let WA_NUMBER = "6281234567890"; // GANTI NO WA KAMU DISINI
+let WA_NUMBER = "6288994657745"; // GANTI NO WA KAMU DISINI
 
 function loadProducts() {
   products = JSON.parse(localStorage.getItem(KEY)) || [];
@@ -44,10 +44,7 @@ function loadProducts() {
   });
 }
 
-// AUTO REFRESH SAAT ADMIN UPDATE
-window.addEventListener('storage', (e) => {
-  if(e.key === 'masaji_update') loadProducts();
-});
+window.addEventListener('storage', (e) => { if(e.key === 'masaji_update') loadProducts(); });
 
 function addToCart(id) {
   const p = products.find(p=>p.id==id);
