@@ -1,25 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
-(function() {
-  if (window.__playableTouchPatchInstalled) return;
-  window.__playableTouchPatchInstalled = true;
-  var origAdd = EventTarget.prototype.addEventListener;
-  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
-  EventTarget.prototype.addEventListener = function(type, listener, options) {
-    if (blockedTypes[type]) {
-      if (options === undefined || options === null) {
-        options = { passive: true };
-      } else if (typeof options === 'boolean') {
-        options = { capture: options, passive: true };
-      } else {
-        options = Object.assign({}, options, { passive: true });
-      }
-    }
-    return origAdd.call(this, type, listener, options);
-  };
-})();
-</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+<head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Masaji Elektronik</title>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -28,48 +9,133 @@
 <div class="max-w-6xl mx-auto">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Dashboard Admin Masaji</h1>
-    <a href="data:text/html;base64,PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImlkIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij48bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+Cjx0aXRsZT5NYXNhamkgRWxla3Ryb25payAtIFRva28gT25saW5lPC90aXRsZT4KPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLnRhaWx3aW5kY3NzLmNvbSI+PC9zY3JpcHQ+CjwvaGVhZD4KPGJvZHkgY2xhc3M9ImJnLXNsYXRlLTUwIG1pbi1oLXNjcmVlbiI+CjxoZWFkZXIgY2xhc3M9ImJnLXdoaXRlIHNoYWRvdyBzdGlja3kgdG9wLTAgei00MCBwLTQgZmxleCBqdXN0aWZ5LWJldHdlZW4gaXRlbXMtY2VudGVyIj4KICA8aDEgY2xhc3M9InRleHQtMnhsIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTgwMCI+TWFzYWppIEVsZWt0cm9uaWs8L2gxPgogIDxidXR0b24gb25jbGljaz0idG9nZ2xlQ2FydCgpIiBjbGFzcz0iYmctaW5kaWdvLTYwMCBob3ZlcjpiZy1pbmRpZ28tNzAwIHRleHQtd2hpdGUgcHgtNCBweS0yIHJvdW5kZWQtbGcgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIiPgogICAg8J+bkiBLZXJhbmphbmcgKDxzcGFuIGlkPSJjYXJ0Q291bnQiPjA8L3NwYW4+KQogIDwvYnV0dG9uPgo8L2hlYWRlcj4KCjxtYWluIGNsYXNzPSJwLTYgbWF4LXctN3hsIG14LWF1dG8iPgogIDxkaXYgaWQ9InByb2R1Y3RHcmlkIiBjbGFzcz0iZ3JpZCBzbTpncmlkLWNvbHMtMiBsZzpncmlkLWNvbHMtNCBnYXAtNSI+PC9kaXY+CjwvbWFpbj4KCjxkaXYgaWQ9ImNhcnRTaWRlYmFyIiBjbGFzcz0iZml4ZWQgcmlnaHQtMCB0b3AtMCBoLWZ1bGwgdy05NiBtYXgtdy1bOTB2d10gYmctd2hpdGUgc2hhZG93LTJ4bCBwLTUgaGlkZGVuIHotNTAgZmxleCBmbGV4LWNvbCI+CiAgPGRpdiBjbGFzcz0iZmxleCBqdXN0aWZ5LWJldHdlZW4gaXRlbXMtY2VudGVyIGJvcmRlci1iIHBiLTMgbWItMyI+CiAgICA8aDIgY2xhc3M9ImZvbnQtYm9sZCB0ZXh0LXhsIj5LZXJhbmphbmc8L2gyPgogICAgPGJ1dHRvbiBvbmNsaWNrPSJ0b2dnbGVDYXJ0KCkiIGNsYXNzPSJ3LTggaC04IGJnLXNsYXRlLTEwMCByb3VuZGVkLWZ1bGwiPuKclTwvYnV0dG9uPgogIDwvZGl2PgogIDxkaXYgaWQ9ImNhcnRJdGVtcyIgY2xhc3M9Im1iLTQgZmxleC0xIG92ZXJmbG93LXktYXV0byBzcGFjZS15LTIiPjwvZGl2PgogIDxkaXYgY2xhc3M9ImJvcmRlci10IHB0LTMiPgogICAgPHAgY2xhc3M9ImZvbnQtYm9sZCB0ZXh0LWxnIj5Ub3RhbDogUnAgPHNwYW4gaWQ9InRvdGFsUHJpY2UiPjA8L3NwYW4+PC9wPgogICAgPGJ1dHRvbiBvbmNsaWNrPSJjaGVja291dFdBKCkiIGNsYXNzPSJiZy1ncmVlbi02MDAgaG92ZXI6YmctZ3JlZW4tNzAwIHRleHQtd2hpdGUgdy1mdWxsIHB5LTMgcm91bmRlZC1sZyBtdC0zIGZvbnQtYm9sZCI+Q2hlY2tvdXQgdmlhIFdBPC9idXR0b24+CiAgICA8YnV0dG9uIG9uY2xpY2s9ImNsZWFyQ2FydCgpIiBjbGFzcz0idy1mdWxsIHB5LTIgdGV4dC1zbSB0ZXh0LWdyYXktNTAwIG10LTIiPktvc29uZ2thbiBLZXJhbmphbmc8L2J1dHRvbj4KICA8L2Rpdj4KPC9kaXY+CjxkaXYgaWQ9Im92ZXJsYXkiIG9uY2xpY2s9InRvZ2dsZUNhcnQoKSIgY2xhc3M9ImZpeGVkIGluc2V0LTAgYmctYmxhY2svMzAgaGlkZGVuIHotNDAiPjwvZGl2PgoKPHNjcmlwdD4KY29uc3QgS0VZID0gJ21hc2FqaV9wcm9kdWN0cyc7CmNvbnN0IFdBX05VTUJFUiA9ICI2Mjg4OTk0NjU3NzQ1IjsKCmNvbnN0IGVsR3JpZCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwcm9kdWN0R3JpZCcpOwpjb25zdCBlbENhcnRJdGVtcyA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjYXJ0SXRlbXMnKTsKY29uc3QgZWxUb3RhbFByaWNlID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RvdGFsUHJpY2UnKTsKY29uc3QgZWxDYXJ0Q291bnQgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2FydENvdW50Jyk7CmNvbnN0IGVsQ2FydFNpZGViYXIgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2FydFNpZGViYXInKTsKY29uc3QgZWxPdmVybGF5ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ292ZXJsYXknKTsKCmxldCBwcm9kdWN0cyA9IFtdOwpsZXQgY2FydCA9IFtdOwoKZnVuY3Rpb24gZXNjYXBlSFRNTChzdHIgPSAiIikgewogIHJldHVybiBTdHJpbmcoc3RyKS5yZXBsYWNlKC9bJjw+IiddL2csIG0gPT4gKHsnJic6JyZhbXA7JywnPCc6JyZsdDsnLCc+JzonJmd0OycsJyInOicmcXVvdDsnLCInIjonJiMzOTsnfVttXSkpOwp9CgpmdW5jdGlvbiBnZXRQcm9kdWN0cygpIHsKICB0cnkgeyByZXR1cm4gSlNPTi5wYXJzZShsb2NhbFN0b3JhZ2UuZ2V0SXRlbShLRVkpKSB8fCBbXTsgfQogIGNhdGNoIHsgcmV0dXJuIFtdOyB9Cn0KCmZ1bmN0aW9uIGxvYWRQcm9kdWN0cygpIHsKICBwcm9kdWN0cyA9IGdldFByb2R1Y3RzKCk7CiAgZWxHcmlkLmlubmVySFRNTCA9ICIiOwogIGlmKHByb2R1Y3RzLmxlbmd0aCA9PT0gMCkgewogICAgZWxHcmlkLmlubmVySFRNTCA9IGA8ZGl2IGNsYXNzPSJjb2wtc3Bhbi00IHRleHQtY2VudGVyIHB5LTIwIj4KICAgICAgPHAgY2xhc3M9InRleHQtZ3JheS01MDAiPkJlbHVtIGFkYSBwcm9kdWsuPC9wPgogICAgICA8YSBocmVmPSJhZG1pbi5odG1sIiBjbGFzcz0idGV4dC1pbmRpZ28tNjAwIHVuZGVybGluZSI+QnVrYSBhZG1pbi5odG1sIHVudHVrIG1lbmFtYmFoIHByb2R1azwvYT4KICAgIDwvZGl2PmA7CiAgICByZXR1cm47CiAgfQogIHByb2R1Y3RzLmZvckVhY2gocCA9PiB7CiAgICBjb25zdCBoYWJpcyA9IHAuc3RvY2sgPD0gMDsKICAgIGNvbnN0IGNhcmQgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKTsKICAgIGNhcmQuY2xhc3NOYW1lID0gImJnLXdoaXRlIHAtMyByb3VuZGVkLXhsIHNoYWRvdyBob3ZlcjpzaGFkb3ctbGcgdHJhbnNpdGlvbiI7CiAgICBjYXJkLmlubmVySFRNTCA9IGAKICAgICAgPGltZyBzcmM9IiR7ZXNjYXBlSFRNTChwLmltZyl9IiBvbmVycm9yPSJ0aGlzLnNyYz0naHR0cHM6Ly92aWEucGxhY2Vob2xkZXIuY29tLzMwMD90ZXh0PU5vK0ltYWdlJyIgY2xhc3M9InctZnVsbCBoLTQwIG9iamVjdC1jb3ZlciByb3VuZGVkLWxnIGJnLXNsYXRlLTEwMCI+CiAgICAgIDxoMyBjbGFzcz0iZm9udC1ib2xkIG10LTMgbGluZS1jbGFtcC0yIj4ke2VzY2FwZUhUTUwocC5uYW1lKX08L2gzPgogICAgICA8cCBjbGFzcz0idGV4dC14cyB0ZXh0LWdyYXktNTAwIG10LTEiPiR7ZXNjYXBlSFRNTChwLmRlc2N8fCcnKS5zbGljZSgwLDYwKX08L3A+CiAgICAgIDxwIGNsYXNzPSJ0ZXh0LXNtIHRleHQtZ3JheS01MDAgbXQtMSI+U3RvazogJHtwLnN0b2NrfSB8IFRlcmp1YWw6ICR7cC5zb2xkfHwwfTwvcD4KICAgICAgPHAgY2xhc3M9ImZvbnQtYm9sZCB0ZXh0LWluZGlnby02MDAgbXQtMSI+UnAgJHsoTnVtYmVyKHAucHJpY2UpfHwwKS50b0xvY2FsZVN0cmluZygnaWQtSUQnKX08L3A+CiAgICAgIDxidXR0b24gZGF0YS1pZD0iJHtwLmlkfSIgY2xhc3M9ImFkZC1idG4gYmctaW5kaWdvLTYwMCBob3ZlcjpiZy1pbmRpZ28tNzAwIHRleHQtd2hpdGUgdy1mdWxsIHB5LTIgcm91bmRlZC1sZyBtdC0yIGRpc2FibGVkOmJnLWdyYXktNDAwIHRleHQtc20gZm9udC1tZWRpdW0iICR7aGFiaXM/J2Rpc2FibGVkJzonJ30+JHtoYWJpcz8nU3RvayBIYWJpcyc6JysgS2VyYW5qYW5nJ308L2J1dHRvbj4KICAgIGA7CiAgICBlbEdyaWQuYXBwZW5kQ2hpbGQoY2FyZCk7CiAgfSk7CiAgLy8gYmluZCBidXR0b25zIHNhZmVseQogIGVsR3JpZC5xdWVyeVNlbGVjdG9yQWxsKCcuYWRkLWJ0bicpLmZvckVhY2goYiA9PiBiLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgKCkgPT4gYWRkVG9DYXJ0KGIuZGF0YXNldC5pZCkpKTsKfQoKZnVuY3Rpb24gYWRkVG9DYXJ0KGlkKSB7CiAgcHJvZHVjdHMgPSBnZXRQcm9kdWN0cygpOyAvLyBhbHdheXMgZnJlc2gKICBjb25zdCBwID0gcHJvZHVjdHMuZmluZCh4ID0+IFN0cmluZyh4LmlkKSA9PT0gU3RyaW5nKGlkKSk7CiAgaWYoIXApIHJldHVybiBhbGVydCgnUHJvZHVrIHRpZGFrIGRpdGVtdWthbicpOwogIGlmKHAuc3RvY2sgPD0gMCkgcmV0dXJuIGFsZXJ0KCdTdG9rIGhhYmlzJyk7CiAgY29uc3QgaXRlbSA9IGNhcnQuZmluZChpID0+IFN0cmluZyhpLmlkKSA9PT0gU3RyaW5nKGlkKSk7CiAgY29uc3QgY3VycmVudFF0eSA9IGl0ZW0gPyBpdGVtLnF0eSA6IDA7CiAgaWYoY3VycmVudFF0eSArIDEgPiBwLnN0b2NrKSByZXR1cm4gYWxlcnQoYFN0b2sgdGlkYWsgY3VrdXAuIFNpc2EgJHtwLnN0b2NrfWApOwogIGlmKGl0ZW0pIGl0ZW0ucXR5Kys7IGVsc2UgY2FydC5wdXNoKHtpZDogcC5pZCwgcXR5OiAxfSk7CiAgcmVuZGVyQ2FydCgpOwp9CgpmdW5jdGlvbiByZW5kZXJDYXJ0KCkgewogIGVsQ2FydEl0ZW1zLmlubmVySFRNTCA9ICIiOwogIGxldCB0b3RhbCA9IDA7CiAgbGV0IGNvdW50ID0gMDsKICBpZihjYXJ0Lmxlbmd0aCA9PT0gMCkgewogICAgZWxDYXJ0SXRlbXMuaW5uZXJIVE1MID0gYDxwIGNsYXNzPSJ0ZXh0LWNlbnRlciB0ZXh0LWdyYXktNDAwIHB5LTEwIj5LZXJhbmphbmcga29zb25nPC9wPmA7CiAgfQogIGNhcnQgPSBjYXJ0LmZpbHRlcihjID0+IHsKICAgIGNvbnN0IHByb2QgPSBwcm9kdWN0cy5maW5kKHByID0+IFN0cmluZyhwci5pZCkgPT09IFN0cmluZyhjLmlkKSk7CiAgICBpZighcHJvZCkgcmV0dXJuIGZhbHNlOyAvLyBoYXB1cyBqaWthIHByb2R1ayBzdWRhaCBkaWhhcHVzIGFkbWluCiAgICByZXR1cm4gdHJ1ZTsKICB9KTsKCiAgY2FydC5mb3JFYWNoKGkgPT4gewogICAgY29uc3QgcCA9IHByb2R1Y3RzLmZpbmQocHIgPT4gU3RyaW5nKHByLmlkKSA9PT0gU3RyaW5nKGkuaWQpKTsKICAgIGlmKCFwKSByZXR1cm47CiAgICBjb25zdCBzdWIgPSBwLnByaWNlICogaS5xdHk7CiAgICB0b3RhbCArPSBzdWI7CiAgICBjb3VudCArPSBpLnF0eTsKICAgIGNvbnN0IHJvdyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgcm93LmNsYXNzTmFtZSA9ICJmbGV4IGp1c3RpZnktYmV0d2VlbiBpdGVtcy1jZW50ZXIgYm9yZGVyLWIgcHktMiBnYXAtMiI7CiAgICByb3cuaW5uZXJIVE1MID0gYAogICAgICA8ZGl2IGNsYXNzPSJmbGV4LTEiPgogICAgICAgIDxwIGNsYXNzPSJmb250LW1lZGl1bSB0ZXh0LXNtIj4ke2VzY2FwZUhUTUwocC5uYW1lKX08L3A+CiAgICAgICAgPHAgY2xhc3M9InRleHQteHMgdGV4dC1ncmF5LTUwMCI+UnAgJHtOdW1iZXIocC5wcmljZSkudG9Mb2NhbGVTdHJpbmcoJ2lkLUlEJyl9IHggJHtpLnF0eX08L3A+CiAgICAgICAgPGRpdiBjbGFzcz0iZmxleCBnYXAtMSBtdC0xIj4KICAgICAgICAgIDxidXR0b24gY2xhc3M9ImRlYyB3LTYgaC02IGJnLXNsYXRlLTEwMCByb3VuZGVkIj4tPC9idXR0b24+CiAgICAgICAgICA8YnV0dG9uIGNsYXNzPSJpbmMgdy02IGgtNiBiZy1zbGF0ZS0xMDAgcm91bmRlZCI+KzwvYnV0dG9uPgogICAgICAgICAgPGJ1dHRvbiBjbGFzcz0iZGVsIHRleHQteHMgdGV4dC1yZWQtNTAwIG1sLTIiPkhhcHVzPC9idXR0b24+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgICA8c3BhbiBjbGFzcz0iZm9udC1ib2xkIHRleHQtc20iPlJwICR7c3ViLnRvTG9jYWxlU3RyaW5nKCdpZC1JRCcpfTwvc3Bhbj4KICAgIGA7CiAgICByb3cucXVlcnlTZWxlY3RvcignLmRlYycpLm9uY2xpY2sgPSAoKSA9PiB1cGRhdGVRdHkoaS5pZCwgaS5xdHkgLSAxKTsKICAgIHJvdy5xdWVyeVNlbGVjdG9yKCcuaW5jJykub25jbGljayA9ICgpID0+IHVwZGF0ZVF0eShpLmlkLCBpLnF0eSArIDEpOwogICAgcm93LnF1ZXJ5U2VsZWN0b3IoJy5kZWwnKS5vbmNsaWNrID0gKCkgPT4gdXBkYXRlUXR5KGkuaWQsIDApOwogICAgZWxDYXJ0SXRlbXMuYXBwZW5kQ2hpbGQocm93KTsKICB9KTsKICBlbFRvdGFsUHJpY2UuaW5uZXJUZXh0ID0gdG90YWwudG9Mb2NhbGVTdHJpbmcoJ2lkLUlEJyk7CiAgZWxDYXJ0Q291bnQuaW5uZXJUZXh0ID0gY291bnQ7Cn0KCmZ1bmN0aW9uIHVwZGF0ZVF0eShpZCwgbmV3UXR5KSB7CiAgcHJvZHVjdHMgPSBnZXRQcm9kdWN0cygpOwogIGNvbnN0IHAgPSBwcm9kdWN0cy5maW5kKHByID0+IFN0cmluZyhwci5pZCkgPT09IFN0cmluZyhpZCkpOwogIGlmKG5ld1F0eSA8PSAwKSB7CiAgICBjYXJ0ID0gY2FydC5maWx0ZXIoYyA9PiBTdHJpbmcoYy5pZCkgIT09IFN0cmluZyhpZCkpOwogIH0gZWxzZSB7CiAgICBpZihwICYmIG5ld1F0eSA+IHAuc3RvY2spIHJldHVybiBhbGVydChgTWFrc2ltYWwgc3RvayAke3Auc3RvY2t9YCk7CiAgICBjb25zdCBpdGVtID0gY2FydC5maW5kKGMgPT4gU3RyaW5nKGMuaWQpID09PSBTdHJpbmcoaWQpKTsKICAgIGlmKGl0ZW0pIGl0ZW0ucXR5ID0gbmV3UXR5OwogIH0KICByZW5kZXJDYXJ0KCk7Cn0KCmZ1bmN0aW9uIGNsZWFyQ2FydCgpIHsgY2FydCA9IFtdOyByZW5kZXJDYXJ0KCk7IH0KCmZ1bmN0aW9uIHRvZ2dsZUNhcnQoKSB7CiAgZWxDYXJ0U2lkZWJhci5jbGFzc0xpc3QudG9nZ2xlKCdoaWRkZW4nKTsKICBlbE92ZXJsYXkuY2xhc3NMaXN0LnRvZ2dsZSgnaGlkZGVuJyk7Cn0KCmZ1bmN0aW9uIGNoZWNrb3V0V0EoKSB7CiAgaWYoY2FydC5sZW5ndGggPT09IDApIHJldHVybiBhbGVydCgnS2VyYW5qYW5nIGtvc29uZycpOwogIHByb2R1Y3RzID0gZ2V0UHJvZHVjdHMoKTsKICAKICAvLyB2YWxpZGFzaSBha2hpcgogIGZvcihjb25zdCBpIG9mIGNhcnQpIHsKICAgIGNvbnN0IHAgPSBwcm9kdWN0cy5maW5kKHByID0+IFN0cmluZyhwci5pZCkgPT09IFN0cmluZyhpLmlkKSk7CiAgICBpZighcCkgcmV0dXJuIGFsZXJ0KGBQcm9kdWsgc3VkYWggdGlkYWsgdGVyc2VkaWFgKTsKICAgIGlmKGkucXR5ID4gcC5zdG9jaykgcmV0dXJuIGFsZXJ0KGAke3AubmFtZX0gc3RvayB0aWRhayBjdWt1cC4gU2lzYSAke3Auc3RvY2t9YCk7CiAgfQoKICBsZXQgbWVzc2FnZSA9IGBIYWxvIE1hc2FqaSBFbGVrdHJvbmlrLCBzYXlhIG1hdSBwZXNhbjolMEElMEFgOwogIGxldCB0b3RhbCA9IDA7CiAgY2FydC5mb3JFYWNoKGkgPT4gewogICAgY29uc3QgcCA9IHByb2R1Y3RzLmZpbmQocHIgPT4gU3RyaW5nKHByLmlkKSA9PT0gU3RyaW5nKGkuaWQpKTsKICAgIGNvbnN0IHN1YiA9IHAucHJpY2UgKiBpLnF0eTsKICAgIHRvdGFsICs9IHN1YjsKICAgIG1lc3NhZ2UgKz0gYC0gJHtwLm5hbWV9IHgke2kucXR5fSA9IFJwICR7c3ViLnRvTG9jYWxlU3RyaW5nKCdpZC1JRCcpfSUwQWA7CiAgfSk7CiAgbWVzc2FnZSArPSBgJTBBVG90YWw6IFJwICR7dG90YWwudG9Mb2NhbGVTdHJpbmcoJ2lkLUlEJyl9JTBBJTBBTW9ob24gaW5mbyBsYW5qdXQuYDsKCiAgLy8ga3VyYW5naSBzdG9rCiAgY2FydC5mb3JFYWNoKGkgPT4gewogICAgY29uc3QgaWR4ID0gcHJvZHVjdHMuZmluZEluZGV4KHByID0+IFN0cmluZyhwci5pZCkgPT09IFN0cmluZyhpLmlkKSk7CiAgICBpZihpZHggPiAtMSkgewogICAgICBwcm9kdWN0c1tpZHhdLnN0b2NrIC09IGkucXR5OwogICAgICBwcm9kdWN0c1tpZHhdLnNvbGQgPSAocHJvZHVjdHNbaWR4XS5zb2xkfHwwKSArIGkucXR5OwogICAgfQogIH0pOwogIGxvY2FsU3RvcmFnZS5zZXRJdGVtKEtFWSwgSlNPTi5zdHJpbmdpZnkocHJvZHVjdHMpKTsKICBsb2NhbFN0b3JhZ2Uuc2V0SXRlbSgnbWFzYWppX3VwZGF0ZScsIERhdGUubm93KCkudG9TdHJpbmcoKSk7CgogIHdpbmRvdy5vcGVuKGBodHRwczovL3dhLm1lLyR7V0FfTlVNQkVSfT90ZXh0PSR7bWVzc2FnZX1gLCAnX2JsYW5rJyk7CiAgY2FydCA9IFtdOyByZW5kZXJDYXJ0KCk7IGxvYWRQcm9kdWN0cygpOwogIHRvZ2dsZUNhcnQoKTsKfQoKLy8gc3luYyBhbnRhciB0YWIgKyBzYWF0IGZva3VzIGJhbGlrIGRhcmkgYWRtaW4Kd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ3N0b3JhZ2UnLCAoZSkgPT4gewogIGlmKGUua2V5ID09PSBLRVkgfHwgZS5rZXkgPT09ICdtYXNhamlfdXBkYXRlJykgbG9hZFByb2R1Y3RzKCk7Cn0pOwp3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcignZm9jdXMnLCBsb2FkUHJvZHVjdHMpOwoKbG9hZFByb2R1Y3RzKCk7CnJlbmRlckNhcnQoKTsKPC9zY3JpcHQ+CjwvYm9keT4KPC9odG1sPgo=" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">Lihat Toko ↗</a>
+    <a href="index.html" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">Lihat Toko ↗</a>
   </div>
 
   <div class="grid lg:grid-cols-3 gap-6">
-    <div class="bg-white p-5 rounded-xl shadow lg:col-span-1 h-fit sticky top-6">
+    <div class="bg-white p-5 rounded-xl shadow lg:col-span-1 h-fit">
       <h2 class="font-bold mb-4 text-lg">Tambah / Edit Produk</h2>
       <form id="productForm" class="space-y-3">
         <input type="hidden" id="productId">
         <div>
-          <label class="text-xs font-medium">Nama Produk</label>
-          <input id="name" placeholder="Nama Produk" class="w-full border p-2.5 rounded-lg" required>
+          <label class="text-xs font-medium">Nama Produk *</label>
+          <input id="name" placeholder="Contoh: Kipas Angin Miyako" class="w-full border p-2.5 rounded-lg" required>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs font-medium">Harga (Rp)</label>
-            <input id="price" type="number" min="0" placeholder="50000" class="w-full border p-2.5 rounded-lg" required>
-          </div>
-          <div>
-            <label class="text-xs font-medium">Stok</label>
-            <input id="stock" type="number" min="0" placeholder="10" class="w-full border p-2.5 rounded-lg" required>
-          </div>
+          <div><label class="text-xs font-medium">Harga (Rp)</label><input id="price" type="number" min="0" class="w-full border p-2.5 rounded-lg" required></div>
+          <div><label class="text-xs font-medium">Stok</label><input id="stock" type="number" min="0" class="w-full border p-2.5 rounded-lg" required></div>
         </div>
-        <div>
-          <label class="text-xs font-medium">Link Gambar</label>
-          <input id="img" placeholder="https://..." class="w-full border p-2.5 rounded-lg" required>
-          <p class="text-[11px] text-gray-500 mt-1">Pakai direct link Imgur / link gambar apapun. Preview muncul di bawah.</p>
-          <img id="previewImg" class="w-full h-32 object-cover rounded-lg mt-2 hidden bg-slate-100" onerror="this.classList.add('hidden')">
-        </div>
-        <div>
-          <label class="text-xs font-medium">Deskripsi</label>
-          <textarea id="desc" placeholder="Deskripsi singkat" class="w-full border p-2.5 rounded-lg h-20"></textarea>
-        </div>
+        <div><label class="text-xs font-medium">Link Gambar</label><input id="img" placeholder="https://i.imgur.com/xxx.jpg" class="w-full border p-2.5 rounded-lg" required></div>
+        <div><label class="text-xs font-medium">Deskripsi</label><textarea id="desc" class="w-full border p-2.5 rounded-lg h-20"></textarea></div>
         <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg w-full font-medium">Simpan Produk</button>
         <button type="button" id="cancelBtn" class="w-full py-2 text-sm text-gray-500 hidden">Batal Edit</button>
       </form>
     </div>
 
     <div class="bg-white p-5 rounded-xl shadow lg:col-span-2">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="font-bold text-lg">Daftar Produk (<span id="count">0</span>)</h2>
-        <input id="search" placeholder="Cari produk..." class="border rounded-lg px-3 py-1.5 text-sm">
+      <h2 class="font-bold text-lg mb-4">Daftar Produk (<span id="count">0</span>)</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm"><thead><tr class="text-left border-b text-gray-500"><th class="pb-2">Produk</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="productList"></tbody></table>
       </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = 'masaji_products';
+let products = [];
+
+const elList = document.getElementById('productList');
+const elCount = document.getElementById('count');
+
+function getProducts() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch { return []; }
+}
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(products));
+  localStorage.setItem('masaji_update', Date.now().toString());
+  loadProducts();
+}
+
+function loadProducts() {
+  products = getProducts();
+  elCount.innerText = products.length;
+  elList.innerHTML = "";
+  if(products.length === 0) {
+    elList.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-gray-400">Belum ada produk</td></tr>`;
+    return;
+  }
+  products.forEach((p) => {
+    const realIndex = products.findIndex(x => String(x.id) === String(p.id)); // FIX: pakai String()
+    elList.innerHTML += `
+      <tr class="border-b hover:bg-slate-50">
+        <td class="p-2 flex gap-2 items-center">
+          <img src="${p.img}" onerror="this.src='https://via.placeholder.com/100'" class="w-12 h-12 object-cover rounded">
+          <div><p class="font-medium">${p.name}</p><p class="text-[11px] text-gray-400">Terjual: ${p.sold||0}</p></div>
+        </td>
+        <td class="p-2">Rp ${Number(p.price).toLocaleString('id-ID')}</td>
+        <td class="p-2">${p.stock}</td>
+        <td class="p-2">
+          <button onclick="editProduct(${realIndex})" class="bg-yellow-500 hover:bg-yellow-600 px-2.5 py-1 rounded text-white text-xs">Edit</button>
+          <button onclick="deleteProduct(${realIndex})" class="bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded text-white text-xs">Hapus</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+document.getElementById('productForm').onsubmit = (e) => {
+  e.preventDefault();
+  const idVal = document.getElementById('productId').value;
+  const id = idVal? idVal : Date.now().toString();
+
+  const dataLama = products.find(p => String(p.id) === String(id)); // FIX: cari data lama
+
+  const data = {
+    id: id,
+    name: document.getElementById('name').value.trim(), // FIX:.trim() biar gak spasi doang
+    price: Math.max(0, Number(document.getElementById('price').value)),
+    stock: Math.max(0, Number(document.getElementById('stock').value)),
+    desc: document.getElementById('desc').value.trim(),
+    img: document.getElementById('img').value.trim(),
+    sold: dataLama? (dataLama.sold||0) : 0 // FIX: jangan reset sold pas edit
+  };
+
+  if(!data.name) return alert('Nama produk wajib diisi!');
+
+  const index = products.findIndex(p => String(p.id) === String(id));
+  if(index > -1) products[index] = data; else products.push(data);
+
+  e.target.reset();
+  document.getElementById('productId').value = "";
+  document.getElementById('cancelBtn').classList.add('hidden');
+  save();
+  alert('Produk berhasil disimpan!');
+};
+
+function deleteProduct(i) { if(confirm('Hapus produk ini?')) { products.splice(i,1); save(); } }
+function editProduct(i) {
+  const p = products[i];
+  document.getElementById('productId').value = p.id;
+  document.getElementById('name').value = p.name;
+  document.getElementById('price').value = p.price;
+  document.getElementById('stock').value = p.stock;
+  document.getElementById('desc').value = p.desc||'';
+  document.getElementById('img').value = p.img;
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('cancelBtn').onclick = () => {
+  document.getElementById('productForm').reset();
+  document.getElementById('productId').value = "";
+  document.getElementById('cancelBtn').classList.add('hidden');
+}
+
+loadProducts();
+</script>
+</body>
+</html>      </div>
       <div class="overflow-x-auto">
         <table class="w-full text-sm"><thead><tr class="text-left border-b text-gray-500"><th class="pb-2">Produk</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="productList"></tbody></table>
       </div>
