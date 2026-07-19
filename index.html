@@ -1,37 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masaji Elektronik</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50">
+<header class="bg-white shadow p-4 flex justify-between">
+  <h1 class="text-2xl font-bold">Masaji Elektronik</h1>
+  <a href="admin.html" target="_blank" class="bg-yellow-500 text-white px-4 py-2 rounded">Mode Admin</a>
+  <button onclick="toggleCart()" class="bg-indigo-600 text-white px-4 py-2 rounded">Keranjang (<span id="cartCount">0</span>)</button>
+</header>
+
+<main class="p-6"><div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div></main>
+
+<div id="cartSidebar" class="fixed right-0 top-0 h-full w-80 bg-white shadow-xl p-4 hidden z-50">
+  <h2 class="font-bold text-xl mb-2">Keranjang</h2><div id="cartItems"></div>
+  <p class="mt-2 font-bold">Total: Rp <span id="totalPrice">0</span></p>
+  <button onclick="checkoutWA()" class="bg-green-600 text-white w-full py-2 rounded mt-2">Checkout via WA</button>
+</div>
+
 <script>
-// AMBIL DATA DARI LOCALSTORAGE, BUKAN DARI KODE
-let products = JSON.parse(localStorage.getItem('masaji_products')) || [];
+const KEY = 'masaji_products'; // HARUS SAMA DENGAN ADMIN
+let products = JSON.parse(localStorage.getItem(KEY)) || [];
 let cart = [];
 let WA_NUMBER = "6281234567890"; // GANTI NO WA KAMU
 
 function loadProducts() {
+  products = JSON.parse(localStorage.getItem(KEY)) || []; // AMBIL ULANG TIAP LOAD
   productGrid.innerHTML = "";
+  if(products.length == 0) {
+    productGrid.innerHTML = `<p class="col-span-4 text-center">Belum ada produk. Klik "Mode Admin" buat nambah</p>`;
+    return;
+  }
   products.forEach(p => {
     productGrid.innerHTML += `<div class="bg-white p-3 rounded shadow">
       <img src="${p.img}" class="w-full h-40 object-cover rounded">
       <h3 class="font-bold mt-2">${p.name}</h3>
       <p class="text-sm text-gray-500">Stok: ${p.stock} | Terjual: ${p.sold||0}</p>
       <p class="font-bold text-indigo-600">Rp ${p.price.toLocaleString('id-ID')}</p>
-      <button onclick="addToCart('${p.id}')" class="bg-indigo-600 text-white w-full py-1 rounded mt-1">+ Keranjang</button>
+      <button onclick="addToCart('${p.id}')" ${p.stock==0?'disabled':''} class="bg-indigo-600 text-white w-full py-1 rounded mt-1 disabled:bg-gray-400">${p.stock==0?'Stok Habis':'+ Keranjang'}</button>
     </div>`;
   });
 }
 
+// AUTO REFRESH KALAU ADMIN UPDATE
+window.addEventListener('storage', (e) => {
+  if(e.key === 'masaji_update') loadProducts();
+});
+
+function addToCart(id) {
+  const item = cart.find(i => i.id == id);
+  if(item) item.qty++; else cart.push({id, qty: 1});
+  renderCart();
+}
+function renderCart() {
+  cartItems.innerHTML = ""; let total = 0;
+  cart.forEach(i => {
+    const p = products.find(p=>p.id==i.id);
+    total += p.price * i.qty;
+    cartItems.innerHTML += `<div class="flex justify-between">${p.name} x${i.qty} <span>Rp ${(p.price*i.qty).toLocaleString('id-ID')}</span></div>`;
+  });
+  totalPrice.innerText = total.toLocaleString('id-ID');
+  cartCount.innerText = cart.reduce((a,b)=>a+b.qty,0);
+}
 function checkoutWA() {
   let message = "Halo Masaji, saya mau pesan:\n";
   cart.forEach(i => {
     const p = products.find(p=>p.id==i.id);
     message += `- ${p.name} x${i.qty}\n`;
-    // AUTO KURANGI STOK + TAMBAH SOLD
     p.stock = p.stock - i.qty;
     p.sold = (p.sold||0) + i.qty;
   });
-  localStorage.setItem('masaji_products', JSON.stringify(products)); // SIMPAN PERUBAHAN STOK
-  message += `Total: Rp ${totalPrice.innerText}`;
+  localStorage.setItem(KEY, JSON.stringify(products));
   window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`);
   cart = []; renderCart(); loadProducts();
 }
+window.toggleCart = () => cartSidebar.classList.toggle('hidden');
 
-loadProducts(); // PANGGIL PAS BUKA HALAMAN
-// ... sisanya kode keranjang kamu tetap sama
+loadProducts();
 </script>
+</body>
+</html>
