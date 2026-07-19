@@ -1,25 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
-(function() {
-  if (window.__playableTouchPatchInstalled) return;
-  window.__playableTouchPatchInstalled = true;
-  var origAdd = EventTarget.prototype.addEventListener;
-  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
-  EventTarget.prototype.addEventListener = function(type, listener, options) {
-    if (blockedTypes[type]) {
-      if (options === undefined || options === null) {
-        options = { passive: true };
-      } else if (typeof options === 'boolean') {
-        options = { capture: options, passive: true };
-      } else {
-        options = Object.assign({}, options, { passive: true });
-      }
-    }
-    return origAdd.call(this, type, listener, options);
-  };
-})();
-</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+<head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Masaji Elektronik - Toko Online</title>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -27,16 +8,14 @@
 <body class="bg-slate-50 min-h-screen">
 <header class="bg-white shadow sticky top-0 z-40 p-4 flex justify-between items-center">
   <h1 class="text-2xl font-bold text-slate-800">Masaji Elektronik</h1>
-  <button onclick="toggleCart()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-    🛒 Keranjang (<span id="cartCount">0</span>)
-  </button>
+  <button onclick="toggleCart()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">🛒 Keranjang (<span id="cartCount">0</span>)</button>
 </header>
 
 <main class="p-6 max-w-7xl mx-auto">
   <div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
 </main>
 
-<div id="cartSidebar" class="fixed right-0 top-0 h-full w-96 max-w-[90vw] bg-white shadow-2xl p-5 hidden z-50 flex flex-col">
+<div id="cartSidebar" class="fixed right-0 top-0 h-full w-96 max-w-[90vw] bg-white shadow-2xl p-5 hidden z-50 flex-col">
   <div class="flex justify-between items-center border-b pb-3 mb-3">
     <h2 class="font-bold text-xl">Keranjang</h2>
     <button onclick="toggleCart()" class="w-8 h-8 bg-slate-100 rounded-full">✕</button>
@@ -45,7 +24,6 @@
   <div class="border-t pt-3">
     <p class="font-bold text-lg">Total: Rp <span id="totalPrice">0</span></p>
     <button onclick="checkoutWA()" class="bg-green-600 hover:bg-green-700 text-white w-full py-3 rounded-lg mt-3 font-bold">Checkout via WA</button>
-    <button onclick="clearCart()" class="w-full py-2 text-sm text-gray-500 mt-2">Kosongkan Keranjang</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/30 hidden z-40"></div>
@@ -64,12 +42,88 @@ const elOverlay = document.getElementById('overlay');
 let products = [];
 let cart = [];
 
-function escapeHTML(str = "") {
-  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
 function getProducts() {
   try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch { return []; }
+}
+
+function loadProducts() {
+  products = getProducts();
+  elGrid.innerHTML = "";
+  if(products.length === 0) {
+    elGrid.innerHTML = `<div class="col-span-4 text-center py-20"><p class="text-gray-500">Belum ada produk.</p><a href="admin.html" class="text-indigo-600 underline">Buka admin.html untuk menambah produk</a></div>`;
+    return;
+  }
+  products.forEach(p => {
+    const habis = p.stock <= 0;
+    elGrid.innerHTML += `
+      <div class="bg-white p-3 rounded-xl shadow hover:shadow-lg transition">
+        <img src="${p.img}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-40 object-cover rounded-lg bg-slate-100">
+        <h3 class="font-bold mt-3">${p.name}</h3>
+        <p class="text-xs text-gray-500 mt-1">${(p.desc||'').slice(0,60)}</p>
+        <p class="text-sm text-gray-500 mt-1">Stok: ${p.stock} | Terjual: ${p.sold||0}</p>
+        <p class="font-bold text-indigo-600 mt-1">Rp ${(Number(p.price)||0).toLocaleString('id-ID')}</p>
+        <button onclick="addToCart('${p.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-lg mt-2 disabled:bg-gray-400 text-sm font-medium" ${habis?'disabled':''}>${habis?'Stok Habis':'+ Keranjang'}</button>
+      </div>
+    `;
+  });
+}
+
+function addToCart(id) {
+  products = getProducts();
+  const p = products.find(x => String(x.id) === String(id));
+  if(!p || p.stock <= 0) return alert('Stok habis');
+  const item = cart.find(i => String(i.id) === String(id));
+  if(item) item.qty++; else cart.push({id: p.id, qty: 1});
+  renderCart();
+}
+
+function renderCart() {
+  elCartItems.innerHTML = "";
+  let total = 0; let count = 0;
+  cart = cart.filter(c => products.find(pr => String(pr.id) === String(c.id)));
+  cart.forEach(i => {
+    const p = products.find(pr => String(pr.id) === String(i.id));
+    if(!p) return;
+    const sub = p.price * i.qty;
+    total += sub; count += i.qty;
+    elCartItems.innerHTML += `<div class="flex justify-between border-b py-2"><div><p class="font-medium text-sm">${p.name}</p><p class="text-xs text-gray-500">Rp ${Number(p.price).toLocaleString('id-ID')} x ${i.qty}</p></div><span class="font-bold text-sm">Rp ${sub.toLocaleString('id-ID')}</span></div>`;
+  });
+  elTotalPrice.innerText = total.toLocaleString('id-ID');
+  elCartCount.innerText = count;
+  if(cart.length === 0) elCartItems.innerHTML = `<p class="text-center text-gray-400 py-10">Keranjang kosong</p>`;
+}
+
+function checkoutWA() {
+  if(cart.length === 0) return alert('Keranjang kosong');
+  products = getProducts();
+  let message = `Halo Masaji Elektronik, saya mau pesan:%0A%0A`;
+  let total = 0;
+  cart.forEach(i => {
+    const p = products.find(pr => String(pr.id) === String(i.id));
+    p.stock -= i.qty; p.sold = (p.sold||0) + i.qty;
+    const sub = p.price * i.qty; total += sub;
+    message += `- ${p.name} x${i.qty} = Rp ${sub.toLocaleString('id-ID')}%0A`;
+  });
+  message += `%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
+  localStorage.setItem(KEY, JSON.stringify(products));
+  localStorage.setItem('masaji_update', Date.now().toString());
+  window.open(`https://wa.me/${WA_NUMBER}?text=${message}`, '_blank');
+  cart = []; renderCart(); loadProducts(); toggleCart();
+}
+
+function toggleCart() {
+  elCartSidebar.classList.toggle('hidden');
+  elOverlay.classList.toggle('hidden');
+}
+
+window.addEventListener('storage', (e) => { if(e.key === KEY || e.key === 'masaji_update') loadProducts(); });
+window.addEventListener('focus', loadProducts);
+
+loadProducts();
+</script>
+</body>
+</html>  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
   catch { return []; }
 }
 
