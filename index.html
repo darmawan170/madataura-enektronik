@@ -1,0 +1,37 @@
+<script>
+// AMBIL DATA DARI LOCALSTORAGE, BUKAN DARI KODE
+let products = JSON.parse(localStorage.getItem('masaji_products')) || [];
+let cart = [];
+let WA_NUMBER = "6281234567890"; // GANTI NO WA KAMU
+
+function loadProducts() {
+  productGrid.innerHTML = "";
+  products.forEach(p => {
+    productGrid.innerHTML += `<div class="bg-white p-3 rounded shadow">
+      <img src="${p.img}" class="w-full h-40 object-cover rounded">
+      <h3 class="font-bold mt-2">${p.name}</h3>
+      <p class="text-sm text-gray-500">Stok: ${p.stock} | Terjual: ${p.sold||0}</p>
+      <p class="font-bold text-indigo-600">Rp ${p.price.toLocaleString('id-ID')}</p>
+      <button onclick="addToCart('${p.id}')" class="bg-indigo-600 text-white w-full py-1 rounded mt-1">+ Keranjang</button>
+    </div>`;
+  });
+}
+
+function checkoutWA() {
+  let message = "Halo Masaji, saya mau pesan:\n";
+  cart.forEach(i => {
+    const p = products.find(p=>p.id==i.id);
+    message += `- ${p.name} x${i.qty}\n`;
+    // AUTO KURANGI STOK + TAMBAH SOLD
+    p.stock = p.stock - i.qty;
+    p.sold = (p.sold||0) + i.qty;
+  });
+  localStorage.setItem('masaji_products', JSON.stringify(products)); // SIMPAN PERUBAHAN STOK
+  message += `Total: Rp ${totalPrice.innerText}`;
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`);
+  cart = []; renderCart(); loadProducts();
+}
+
+loadProducts(); // PANGGIL PAS BUKA HALAMAN
+// ... sisanya kode keranjang kamu tetap sama
+</script>
