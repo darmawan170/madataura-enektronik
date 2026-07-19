@@ -21,9 +21,10 @@
         <div class="col-span-2"><label class="text-xs">Nama Produk *</label><input id="name" class="w-full border p-2 rounded" required></div>
         <div><label class="text-xs">Harga</label><input id="price" type="number" class="w-full border p-2 rounded" required></div>
         <div><label class="text-xs">Stok</label><input id="stock" type="number" class="w-full border p-2 rounded" required></div>
-        <div class="col-span-2"><label class="text-xs">Link Gambar</label><input id="img" class="w-full border p-2 rounded" required></div>
+        <div class="col-span-2"><label class="text-xs">Link Gambar Imgur</label><input id="img" class="w-full border p-2 rounded" required></div>
         <div class="col-span-2"><label class="text-xs">Deskripsi</label><textarea id="desc" class="w-full border p-2 rounded h-16"></textarea></div>
         <button class="bg-indigo-600 text-white px-4 py-2 rounded col-span-2">Simpan Produk</button>
+        <button type="button" id="cancelProd" class="bg-gray-400 text-white px-4 py-2 rounded col-span-2 hidden">Batal</button>
       </form>
       <table class="w-full text-sm"><thead><tr class="text-left border-b"><th>Produk</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="productList"></tbody></table>
     </div>
@@ -53,16 +54,16 @@ let vouchers = JSON.parse(localStorage.getItem(KEY_VOU)) || [];
 // PRODUK
 function saveProd() {
   localStorage.setItem(KEY_PROD, JSON.stringify(products));
-  localStorage.setItem('masaji_update', Date.now());
+  localStorage.setItem('masaji_update', Date.now().toString());
   loadProd();
 }
 function loadProd() {
   productList.innerHTML = "";
   products.forEach((p,i) => {
-    productList.innerHTML += `<tr class="border-b">
+    productList.innerHTML += `<tr class="border-b hover:bg-slate-50">
       <td class="p-2">${p.name}</td>
       <td>Rp ${Number(p.price).toLocaleString('id-ID')}</td>
-      <td>${p.stock} <button onclick="restok(${i})" class="text-blue-600 text-xs">+Restok</button></td>
+      <td>${p.stock} <button onclick="restok(${i})" class="text-blue-600 text-xs ml-2">+Restok</button></td>
       <td>
         <button onclick="editProd(${i})" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Edit</button>
         <button onclick="delProd(${i})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
@@ -70,9 +71,83 @@ function loadProd() {
     </tr>`;
   });
 }
-productForm.onsubmit = e => {
+document.getElementById('productForm').onsubmit = e => {
   e.preventDefault();
-  const id = productId.value || Date.now().toString();
+  const id = document.getElementById('productId').value || Date.now().toString();
+  const dataLama = products.find(p => String(p.id) === String(id));
+  const data = {
+    id,
+    name: document.getElementById('name').value.trim(),
+    price: +document.getElementById('price').value,
+    stock: +document.getElementById('stock').value,
+    img: document.getElementById('img').value.trim(),
+    desc: document.getElementById('desc').value.trim(),
+    sold: dataLama?dataLama.sold:0
+  };
+  const idx = products.findIndex(p => String(p.id) === String(id));
+  if(idx>-1) products[idx]=data; else products.push(data);
+  document.getElementById('productForm').reset(); document.getElementById('productId').value="";
+  document.getElementById('cancelProd').classList.add('hidden');
+  saveProd();
+}
+function delProd(i){ if(confirm('Hapus produk ini?')){ products.splice(i,1); saveProd(); } }
+function editProd(i){
+  const p=products[i];
+  document.getElementById('productId').value=p.id;
+  document.getElementById('name').value=p.name;
+  document.getElementById('price').value=p.price;
+  document.getElementById('stock').value=p.stock;
+  document.getElementById('img').value=p.img;
+  document.getElementById('desc').value=p.desc;
+  document.getElementById('cancelProd').classList.remove('hidden');
+}
+function restok(i){
+  const t=prompt('Tambah stok berapa?', '10');
+  if(t &&!isNaN(t)){ products[i].stock += +t; saveProd(); }
+}
+document.getElementById('cancelProd').onclick = () => {
+  document.getElementById('productForm').reset();
+  document.getElementById('productId').value="";
+  document.getElementById('cancelProd').classList.add('hidden');
+}
+
+// VOUCHER
+function saveVou() {
+  localStorage.setItem(KEY_VOU, JSON.stringify(vouchers));
+  loadVou();
+}
+function loadVou() {
+  voucherList.innerHTML = "";
+  if(vouchers.length==0) voucherList.innerHTML = '<p class="text-gray-400">Belum ada voucher</p>';
+  vouchers.forEach((v,i) => {
+    voucherList.innerHTML += `<div class="border p-2 rounded bg-slate-50">
+      <p class="font-bold">${v.code}</p>
+      <p>Diskon: Rp ${Number(v.diskon).toLocaleString('id-ID')}</p>
+      <p>Kuota: ${v.kuota}</p>
+      <button onclick="delVou(${i})" class="text-red-500 text-xs mt-1">Hapus</button>
+    </div>`;
+  });
+}
+document.getElementById('voucherForm').onsubmit = e => {
+  e.preventDefault();
+  const id = document.getElementById('voucherId').value || Date.now().toString();
+  const data = {
+    id,
+    code: document.getElementById('vcode').value.toUpperCase().trim(),
+    diskon: +document.getElementById('vdiskon').value,
+    kuota: +document.getElementById('vkuota').value
+  };
+  const idx = vouchers.findIndex(v => String(v.id) === String(id));
+  if(idx>-1) vouchers[idx]=data; else vouchers.push(data);
+  document.getElementById('voucherForm').reset(); document.getElementById('voucherId').value="";
+  saveVou();
+}
+function delVou(i){ if(confirm('Hapus voucher?')){ vouchers.splice(i,1); saveVou(); } }
+
+loadProd(); loadVou();
+</script>
+</body>
+</html>  const id = productId.value || Date.now().toString();
   const dataLama = products.find(p => String(p.id) === String(id));
   const data = {
     id, name: name.value.trim(), price: +price.value, stock: +stock.value,
