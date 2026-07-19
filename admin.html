@@ -6,70 +6,118 @@
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 p-6">
-<div class="max-w-6xl mx-auto">
+<div class="max-w-7xl mx-auto">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Dashboard Admin Masaji</h1>
     <a href="index.html" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">Lihat Toko ↗</a>
   </div>
 
   <div class="grid lg:grid-cols-3 gap-6">
-    <div class="bg-white p-5 rounded-xl shadow lg:col-span-1 h-fit">
-      <h2 class="font-bold mb-4 text-lg">Tambah / Edit Produk</h2>
-      <form id="productForm" class="space-y-3">
+    <!-- KOLOM KIRI: PRODUK -->
+    <div class="bg-white p-5 rounded-xl shadow lg:col-span-2">
+      <h2 class="font-bold mb-4 text-lg">Kelola Produk</h2>
+      <form id="productForm" class="grid grid-cols-2 gap-3 mb-4">
         <input type="hidden" id="productId">
-        <div>
-          <label class="text-xs font-medium">Nama Produk *</label>
-          <input id="name" placeholder="Contoh: Kipas Angin Miyako" class="w-full border p-2.5 rounded-lg" required>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="text-xs font-medium">Harga (Rp)</label><input id="price" type="number" min="0" class="w-full border p-2.5 rounded-lg" required></div>
-          <div><label class="text-xs font-medium">Stok</label><input id="stock" type="number" min="0" class="w-full border p-2.5 rounded-lg" required></div>
-        </div>
-        <div><label class="text-xs font-medium">Link Gambar</label><input id="img" placeholder="https://i.imgur.com/xxx.jpg" class="w-full border p-2.5 rounded-lg" required></div>
-        <div><label class="text-xs font-medium">Deskripsi</label><textarea id="desc" class="w-full border p-2.5 rounded-lg h-20"></textarea></div>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg w-full font-medium">Simpan Produk</button>
-        <button type="button" id="cancelBtn" class="w-full py-2 text-sm text-gray-500 hidden">Batal Edit</button>
+        <div class="col-span-2"><label class="text-xs">Nama Produk *</label><input id="name" class="w-full border p-2 rounded" required></div>
+        <div><label class="text-xs">Harga</label><input id="price" type="number" class="w-full border p-2 rounded" required></div>
+        <div><label class="text-xs">Stok</label><input id="stock" type="number" class="w-full border p-2 rounded" required></div>
+        <div class="col-span-2"><label class="text-xs">Link Gambar</label><input id="img" class="w-full border p-2 rounded" required></div>
+        <div class="col-span-2"><label class="text-xs">Deskripsi</label><textarea id="desc" class="w-full border p-2 rounded h-16"></textarea></div>
+        <button class="bg-indigo-600 text-white px-4 py-2 rounded col-span-2">Simpan Produk</button>
       </form>
+      <table class="w-full text-sm"><thead><tr class="text-left border-b"><th>Produk</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="productList"></tbody></table>
     </div>
 
-    <div class="bg-white p-5 rounded-xl shadow lg:col-span-2">
-      <h2 class="font-bold text-lg mb-4">Daftar Produk (<span id="count">0</span>)</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm"><thead><tr class="text-left border-b text-gray-500"><th class="pb-2">Produk</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="productList"></tbody></table>
-      </div>
+    <!-- KOLOM KAN: VOUCHER -->
+    <div class="bg-white p-5 rounded-xl shadow">
+      <h2 class="font-bold mb-4 text-lg">Kelola Voucher</h2>
+      <form id="voucherForm" class="space-y-2 mb-4">
+        <input type="hidden" id="voucherId">
+        <div><label class="text-xs">Kode Voucher</label><input id="vcode" placeholder="PROMO10RB" class="w-full border p-2 rounded uppercase" required></div>
+        <div><label class="text-xs">Diskon Rp</label><input id="vdiskon" type="number" placeholder="10000" class="w-full border p-2 rounded" required></div>
+        <div><label class="text-xs">Kuota</label><input id="vkuota" type="number" placeholder="50" class="w-full border p-2 rounded" required></div>
+        <button class="bg-green-600 text-white px-4 py-2 rounded w-full">Simpan Voucher</button>
+      </form>
+      <h3 class="font-bold text-sm mb-2">Daftar Voucher</h3>
+      <div id="voucherList" class="space-y-2 text-sm"></div>
     </div>
   </div>
 </div>
 
 <script>
-const KEY = 'masaji_products';
-let products = [];
+const KEY_PROD = 'masaji_products';
+const KEY_VOU = 'masaji_vouchers';
+let products = JSON.parse(localStorage.getItem(KEY_PROD)) || [];
+let vouchers = JSON.parse(localStorage.getItem(KEY_VOU)) || [];
 
-const elList = document.getElementById('productList');
-const elCount = document.getElementById('count');
-
-function getProducts() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
-  catch { return []; }
+// PRODUK
+function saveProd() {
+  localStorage.setItem(KEY_PROD, JSON.stringify(products));
+  localStorage.setItem('masaji_update', Date.now());
+  loadProd();
 }
-function save() {
-  localStorage.setItem(KEY, JSON.stringify(products));
-  localStorage.setItem('masaji_update', Date.now().toString());
-  loadProducts();
+function loadProd() {
+  productList.innerHTML = "";
+  products.forEach((p,i) => {
+    productList.innerHTML += `<tr class="border-b">
+      <td class="p-2">${p.name}</td>
+      <td>Rp ${Number(p.price).toLocaleString('id-ID')}</td>
+      <td>${p.stock} <button onclick="restok(${i})" class="text-blue-600 text-xs">+Restok</button></td>
+      <td>
+        <button onclick="editProd(${i})" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Edit</button>
+        <button onclick="delProd(${i})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+      </td>
+    </tr>`;
+  });
 }
+productForm.onsubmit = e => {
+  e.preventDefault();
+  const id = productId.value || Date.now().toString();
+  const dataLama = products.find(p => String(p.id) === String(id));
+  const data = {
+    id, name: name.value.trim(), price: +price.value, stock: +stock.value,
+    img: img.value.trim(), desc: desc.value.trim(), sold: dataLama?dataLama.sold:0
+  };
+  const idx = products.findIndex(p => String(p.id) === String(id));
+  if(idx>-1) products[idx]=data; else products.push(data);
+  productForm.reset(); productId.value="";
+  saveProd();
+}
+function delProd(i){ if(confirm('Hapus?')){ products.splice(i,1); saveProd(); } }
+function editProd(i){ const p=products[i]; productId.value=p.id; name.value=p.name; price.value=p.price; stock.value=p.stock; img.value=p.img; desc.value=p.desc; }
+function restok(i){ const t=prompt('Tambah stok berapa?'); if(t){ products[i].stock += +t; saveProd(); } }
 
-function loadProducts() {
-  products = getProducts();
-  elCount.innerText = products.length;
-  elList.innerHTML = "";
-  if(products.length === 0) {
-    elList.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-gray-400">Belum ada produk</td></tr>`;
-    return;
-  }
-  products.forEach((p) => {
-    const realIndex = products.findIndex(x => String(x.id) === String(p.id)); // FIX: pakai String()
-    elList.innerHTML += `
-      <tr class="border-b hover:bg-slate-50">
+// VOUCHER
+function saveVou() {
+  localStorage.setItem(KEY_VOU, JSON.stringify(vouchers));
+  loadVou();
+}
+function loadVou() {
+  voucherList.innerHTML = "";
+  vouchers.forEach((v,i) => {
+    voucherList.innerHTML += `<div class="border p-2 rounded">
+      <p class="font-bold">${v.code}</p>
+      <p>Diskon: Rp ${Number(v.diskon).toLocaleString('id-ID')}</p>
+      <p>Kuota: ${v.kuota}</p>
+      <button onclick="delVou(${i})" class="text-red-500 text-xs">Hapus</button>
+    </div>`;
+  });
+}
+voucherForm.onsubmit = e => {
+  e.preventDefault();
+  const id = voucherId.value || Date.now().toString();
+  const data = {id, code: vcode.value.toUpperCase().trim(), diskon: +vdiskon.value, kuota: +vkuota.value};
+  const idx = vouchers.findIndex(v => String(v.id) === String(id));
+  if(idx>-1) vouchers[idx]=data; else vouchers.push(data);
+  voucherForm.reset(); voucherId.value="";
+  saveVou();
+}
+function delVou(i){ vouchers.splice(i,1); saveVou(); }
+
+loadProd(); loadVou();
+</script>
+</body>
+</html>      <tr class="border-b hover:bg-slate-50">
         <td class="p-2 flex gap-2 items-center">
           <img src="${p.img}" onerror="this.src='https://via.placeholder.com/100'" class="w-12 h-12 object-cover rounded">
           <div><p class="font-medium">${p.name}</p><p class="text-[11px] text-gray-400">Terjual: ${p.sold||0}</p></div>
